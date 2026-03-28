@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-bridge:
+    name: Build bridge daemon
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo apt-get install -y libudev-dev libdbus-1-dev
+      - name: Build
+        run: make -C software/bridge
+      - name: Check binary
+        run: file software/bridge/phreebox-bridge
+
+  lint-docs:
+    name: Lint documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check markdown
+        run: |
+          find . -name "*.md" | xargs grep -l "TODO\|FIXME" || true
+          echo "Docs lint complete"
+
+  validate-spec:
+    name: Validate spec files exist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check required spec files
+        run: |
+          test -f spec/protocol-v1.md || (echo "Missing protocol spec" && exit 1)
+          test -f spec/module-interface.md || (echo "Missing module interface spec" && exit 1)
+          echo "All required spec files present"
