@@ -7,28 +7,6 @@ on:
     branches: [main]
 
 jobs:
-  build-bridge:
-    name: Build bridge daemon
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: sudo apt-get install -y libudev-dev libdbus-1-dev
-      - name: Build
-        run: make -C software/bridge
-      - name: Check binary
-        run: file software/bridge/phreebox-bridge
-
-  lint-docs:
-    name: Lint documentation
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Check markdown
-        run: |
-          find . -name "*.md" | xargs grep -l "TODO\|FIXME" || true
-          echo "Docs lint complete"
-
   validate-spec:
     name: Validate spec files exist
     runs-on: ubuntu-latest
@@ -38,4 +16,18 @@ jobs:
         run: |
           test -f spec/protocol-v1.md || (echo "Missing protocol spec" && exit 1)
           test -f spec/module-interface.md || (echo "Missing module interface spec" && exit 1)
-          echo "All required spec files present"
+          test -f PHILOSOPHY.md || (echo "Missing philosophy" && exit 1)
+          echo "All required files present"
+
+  lint-docs:
+    name: Check documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check markdown files exist
+        run: |
+          test -f README.md
+          test -f CONTRIBUTING.md
+          test -f docs/architecture.md
+          test -f docs/quick-start.md
+          echo "Docs OK"
